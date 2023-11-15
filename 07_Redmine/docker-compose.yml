@@ -1,0 +1,67 @@
+version: "3.9"
+services:
+  redmine:
+    image: redmine:4.1.7-alpine
+    depends_on:
+      mariadb:
+        condition: service_started
+    restart: always
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.services.${SERVICE_NAME}.loadbalancer.server.port=3000"
+    - "traefik.http.routers.${SERVICE_NAME}.tls.certresolver=le"
+    - "traefik.http.routers.${SERVICE_NAME}.rule=Host(`${SERVICE_DOMAIN}`)"
+    - "traefik.http.routers.${SERVICE_NAME}.entrypoints=websecure"
+    environment:
+      - REDMINE_DB_MYSQL_FILE=/run/secrets/redmine_db_host
+      - REDMINE_DB_DATABASE_FILE=/run/secrets/redmine_db_name
+      - REDMINE_DB_USERNAME_FILE=/run/secrets/redmine_db_user
+      - REDMINE_DB_PASSWORD_FILE=/run/secrets/redmine_db_pass
+      - REDMINE_PLUGINS_MIGRATE=1
+    secrets:
+      - redmine_db_host
+      - redmine_db_name
+      - redmine_db_user
+      - redmine_db_pass
+    volumes:
+      - ./redmine/log:/usr/src/redmine/log
+      - ./redmine/files:/usr/src/redmine/files
+      - ./redmine/plugins:/usr/src/redmine/plugins
+      - ./redmine/repos:/usr/src/redmine/repos
+      - ./redmine/themes:/usr/src/redmine/public/themes
+      - ./redmine/config/configuration.yml:/usr/src/redmine/config/configuration.yml
+    networks:
+      - traefik-public
+      - backend
+
+  mariadb:
+    image: mariadb:10.6
+    environment:
+      MYSQL_ROOT_PASSWORD: hasuoDoROOTa
+      MYSQL_DATABASE_FILE: /run/secrets/redmine_db_name
+      MYSQL_USER_FILE: /run/secrets/redmine_db_user
+      MYSQL_PASSWORD_FILE: /run/secrets/redmine_db_pass
+    secrets:
+      - redmine_db_name
+      - redmine_db_user
+      - redmine_db_pass
+    volumes:
+      - ./mariadb/datadir:/var/lib/mysql
+    networks:
+      - backend
+
+
+networks:
+  traefik-public:
+    external: true
+  backend:
+
+secrets:
+  redmine_db_host:
+    file: ./secrets/db_host
+  redmine_db_name:
+    file: ./secrets/db_name
+  redmine_db_user:
+    file: ./secrets/db_user
+  redmine_db_pass:
+    file: ./secrets/db_pass

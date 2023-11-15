@@ -1,0 +1,45 @@
+version: '3.1'
+
+services:
+
+  wordpress:
+    image: wordpress
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.local-wordpress.rule=Host(`wordpress.localtest.me`)"
+      - "traefik.http.routers.local-wordpress.entrypoints=websecure"
+      - "traefik.http.routers.local-wordpress.tls=true"
+      - "traefik.http.services.local-wordpress.loadbalancer.server.port=80"
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: exampleuser
+      WORDPRESS_DB_PASSWORD: examplepass
+      WORDPRESS_DB_NAME: exampledb
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - traefik-public
+      - backend
+
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: exampledb
+      MYSQL_USER: exampleuser
+      MYSQL_PASSWORD: examplepass
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      - backend
+
+volumes:
+  wordpress:
+  db:
+
+networks:
+  traefik-public:
+    external: true
+  backend:

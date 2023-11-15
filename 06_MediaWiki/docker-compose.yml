@@ -1,0 +1,40 @@
+version: '3'
+services:
+  mediawiki:
+    image: mediawiki:1.39.3
+    restart: always
+    volumes:
+      - ./images:/var/www/html/images
+      # After initial setup, download LocalSettings.php to the same directory as
+      # this yaml and uncomment the following line and use compose to restart
+      # the mediawiki service
+      #- ./LocalSettings.php:/var/www/html/LocalSettings.php
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${SERVICE_NAME}.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.${SERVICE_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.${SERVICE_NAME}.tls=true"
+      - "traefik.http.services.${SERVICE_NAME}.loadbalancer.server.port=80"
+    depends_on:
+      mariadb:
+        condition: service_started
+    networks:
+      - traefik-public
+      - backend
+
+  mariadb:
+    image: mariadb:10.6
+    environment:
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+    volumes:
+      - ./mariadb/datadir:/var/lib/mysql
+    networks:
+      - backend
+
+networks:
+  traefik-public:
+    external: true
+  backend:

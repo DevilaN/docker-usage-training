@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  mariadb:
+    image: mariadb:10.6
+    environment:
+      MYSQL_ROOT_PASSWORD: hasuoDoROOTa
+      MYSQL_DATABASE: nazwaBazy
+      MYSQL_USER: uzytkownik
+      MYSQL_PASSWORD: hasloZwyklegoUsera
+    volumes:
+      - ./mariadb/datadir:/var/lib/mysql
+    networks:
+      - backend
+
+  phpmyadmin:
+    image: phpmyadmin
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.local-mariadb-myadmin.rule=Host(`myadmin.localtest.me`)"
+      - "traefik.http.routers.local-mariadb-myadmin.entrypoints=websecure"
+      - "traefik.http.routers.local-mariadb-myadmin.tls=true"
+      - "traefik.http.services.local-mariadb-myadmin.loadbalancer.server.port=80"
+    environment:
+      - PMA_HOST=mariadb
+      - PMA_USER=uzytkownik
+      - PMA_PASSWORD=hasloZwyklegoUsera
+    restart: always
+    networks:
+      - backend
+      - traefik-public
+
+  adminer:
+    image: adminer
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.local-mariadb-adminer.rule=Host(`adminer.localtest.me`)"
+      - "traefik.http.routers.local-mariadb-adminer.entrypoints=websecure"
+      - "traefik.http.routers.local-mariadb-adminer.tls=true"
+      - "traefik.http.services.local-mariadb-adminer.loadbalancer.server.port=8080"
+    environment:
+      - ADMINER_DEFAULT_SERVER=${DB_HOST}
+    restart: always
+    networks:
+      - backend
+      - traefik-public
+
+networks:
+  backend:
+  traefik-public:
+    external: true

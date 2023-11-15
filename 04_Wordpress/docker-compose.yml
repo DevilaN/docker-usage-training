@@ -44,4 +44,4 @@ volumes:
 networks:
   traefik-public:
     external: true
-  backnd:
+  backend:

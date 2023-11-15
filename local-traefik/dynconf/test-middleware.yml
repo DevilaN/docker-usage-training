@@ -1,0 +1,25 @@
+# Declaring the user list
+http:
+  middlewares:
+    test-auth:
+      basicAuth:
+        users:
+          - "test:$apr1$H6uskkkW$IgXLP6ewTrSuBkTrqE8wj/"
+          - "test2:$apr1$d9hr9HBB$4HxwgUir3HP4EsggP/QNo0"
+    test-ratelimit:
+      ratelimit:
+        average: 10000
+        burst: 10000
+
+    test-security:
+      headers:
+        stsSeconds: 31536000
+        forceSTSHeader: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+
+    test-inflight:
+      inFlightReq:
+        amount: 256 
+        sourceCriterion:
+          requestHeaderName: X-Real-Ip

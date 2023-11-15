@@ -3,33 +3,49 @@ version: '3'
 services:
   mariadb:
     image: mariadb:10.6
+    # Those are variables passed to application container
+    # Most of apps use different ones to initialize some settings
+    # Those listed under are from MariaDB docker image documentation
     environment:
       MYSQL_ROOT_PASSWORD: hasuoDoROOTa
       MYSQL_DATABASE: nazwaBazy
       MYSQL_USER: uzytkownik
       MYSQL_PASSWORD: hasloZwyklegoUsera
+    # Local directory: ./mariadb/datadir is used for data persistence
+    # So no data will be lost when container is removed / replaced
     volumes:
       - ./mariadb/datadir:/var/lib/mysql
     networks:
       - backend
 
+  # Another service, named phpmyadmin
   phpmyadmin:
+    # It runs container based on phpmyadmin image
     image: phpmyadmin
+    # Those labels are specific for Traefik
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.local-mariadb-myadmin.rule=Host(`myadmin.localtest.me`)"
       - "traefik.http.routers.local-mariadb-myadmin.entrypoints=websecure"
       - "traefik.http.routers.local-mariadb-myadmin.tls=true"
       - "traefik.http.services.local-mariadb-myadmin.loadbalancer.server.port=80"
+    # Environment variables passed according to documentation
+    # Please notice that HOST od database is it's service name
+    # Also you have to make sure proper user / pass is same as in mariadb service
     environment:
       - PMA_HOST=mariadb
       - PMA_USER=uzytkownik
       - PMA_PASSWORD=hasloZwyklegoUsera
+    # This forces to create new instance of service if previous one fails from any reason
     restart: always
+    # We can use networks. For sure traefik-public is needed so service is reachable by traefik
+    # Also backend network is needed so services will communicate between themselves
     networks:
       - backend
       - traefik-public
 
+  # Adminer as an alternative to phpmyadmin
+  # Same principles
   adminer:
     image: adminer
     labels:
@@ -45,6 +61,7 @@ services:
       - backend
       - traefik-public
 
+# Declared list of networks being used by this entire application stack
 networks:
   backend:
   traefik-public:

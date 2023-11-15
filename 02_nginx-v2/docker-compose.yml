@@ -2,8 +2,11 @@ version: '3'
 
 services:
   nginx:
+    # Notice tagged image with certain version and variation of app image
     image: nginx:1.25.3-alpine
     ports:
       - 8888:80
+    # That's something mapping local ./webpage directory to /usr/share/nginx/html in application container
+    # Also read only mode for this mapping is being used to make sure app can only read those files
     volumes:
       - ./webpage:/usr/share/nginx/html:ro

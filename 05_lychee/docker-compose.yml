@@ -4,15 +4,18 @@ services:
   lychee:
     image: lycheeorg/lychee
     container_name: lychee
+    # Notice injected variable here. DOMAIN_NAME value comes from .env file
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.local-lychee.rule=Host(`${DOMAIN_NAME}`)"
       - "traefik.http.routers.local-lychee.entrypoints=websecure"
       - "traefik.http.routers.local-lychee.tls=true"
       - "traefik.http.services.local-lychee.loadbalancer.server.port=80"
+    # Make sure that Database provider starts first
     depends_on:
       majeskjuel:
         condition: service_started
+    # Bind mounted local directories where conf and uploaded stuff ends up
     volumes:
       - ./lychee/conf:/conf
       - ./lychee/uploads:/uploads
@@ -20,13 +23,17 @@ services:
     networks:
       - backend
       - traefik-public
+    # Environment variables used by lychee
     environment:
       # PHP timezone e.g. PHP_TZ=America/New_York
       - PHP_TZ=UTC
       - TIMEZONE=UTC
+      # This forces https and in Traefik we are using https too
       - APP_FORCE_HTTPS=true
+      # Clever usage of same .env value (Don't Repeat Yourself)
       - APP_URL=https://${DOMAIN_NAME}
       - DB_CONNECTION=mysql
+      # Other variables are using values from .env too
       - DB_HOST=${DB_HOST}
       - DB_PORT=3306
       - DB_DATABASE=${DB_NAME}
@@ -35,7 +42,9 @@ services:
       - STARTUP_DELAY=10
     restart: unless-stopped
   
+  # Database service name do not need to be named mysql or mariadb
   majeskjuel:
+    # But proper image should be choosen
     image: mariadb:10.6
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}

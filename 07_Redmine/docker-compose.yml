@@ -36,11 +36,13 @@ services:
 
   mariadb:
     image: mariadb:10.6
+    # Some apps provide functionality for using secret values in files
     environment:
       MYSQL_ROOT_PASSWORD: hasuoDoROOTa
       MYSQL_DATABASE_FILE: /run/secrets/redmine_db_name
       MYSQL_USER_FILE: /run/secrets/redmine_db_user
       MYSQL_PASSWORD_FILE: /run/secrets/redmine_db_pass
+    # Those secret files are provided here
     secrets:
       - redmine_db_name
       - redmine_db_user
@@ -56,6 +58,7 @@ networks:
     external: true
   backend:
 
+# Also secret files need to be listed for entire stack
 secrets:
   redmine_db_host:
     file: ./secrets/db_host

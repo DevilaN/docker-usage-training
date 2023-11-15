@@ -16,6 +16,7 @@ services:
       WORDPRESS_DB_USER: exampleuser
       WORDPRESS_DB_PASSWORD: examplepass
       WORDPRESS_DB_NAME: exampledb
+    # Named volume so wordpress will store it's stuff here
     volumes:
       - wordpress:/var/www/html
     networks:
@@ -30,6 +31,7 @@ services:
       MYSQL_USER: exampleuser
       MYSQL_PASSWORD: examplepass
       MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    # Easy peasy - named volume for mysql data storage
     volumes:
       - db:/var/lib/mysql
     networks:
@@ -42,4 +44,4 @@ volumes:
 networks:
   traefik-public:
     external: true
-  backend:
+  backnd:

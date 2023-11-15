@@ -1,7 +1,11 @@
 version: '3'
 
+# List of services in this stack
 services:
+  # nginx is name for one of it, and only one here
   nginx:
+    # this services is using image named nginx available from Docker Hub
     image: nginx
+    # Also this service is exposing ports. Machine port 8888 maps to 80 in service container
     ports:
       - 8888:80

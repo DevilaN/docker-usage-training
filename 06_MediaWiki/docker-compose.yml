@@ -24,6 +24,7 @@ services:
 
   mariadb:
     image: mariadb:10.6
+    # If environment variable name in .env is same as passed to container, then you don't need to assign it explicitly
     environment:
       - MYSQL_ROOT_PASSWORD
       - MYSQL_DATABASE
